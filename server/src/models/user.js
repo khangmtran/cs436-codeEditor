@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt'); 
 
 const userSchema = new mongoose.Schema({
   firstName: {
@@ -6,7 +7,7 @@ const userSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
-  LastName: {
+  lastName: {
     type: String,
     required: true,
     trim: true,
@@ -26,22 +27,30 @@ const userSchema = new mongoose.Schema({
     type: [mongoose.Schema.Types.ObjectId],
     ref: 'Project',
     default: [],
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now,
-  },
+  }
+}, {
+  timestamps: true, 
 });
 
-// Middleware to update the `updatedAt` field on each save
-userSchema.pre('save', function (next) {
-  this.updatedAt = Date.now();
-  next();
-});
+userSchema.statics.signup = async function (firstName, lastName, email, password) {
+  const exist = await this.findOne({ email });
+  
+  if (exist) {
+    throw Error('Email already in use');
+  }
+
+  const salt = await bcrypt.genSalt();
+  const hash = await bcrypt.hash(password, salt);
+
+  const user = await this.create({
+    firstName,
+    lastName,
+    email,
+    password: hash,
+  });
+
+  return user;
+};
 
 const User = mongoose.model('User', userSchema);
 module.exports = User;
