@@ -1,14 +1,21 @@
 import { Box, Button, Text } from "@chakra-ui/react";
 import React from "react";
 
-const Output = () => {
+const Output = ({ output, isError }) => {
   return (
     <Box w="33%">
       <Text mb={2} fontSize="lg" fontWeight="bold">
         Output
       </Text>
-      <Box height="75vh" p={2} backgroundColor="#1e1e1e">
-        Hello CS436
+      <Box
+        height="75vh"
+        p={2}
+        backgroundColor="#1e1e1e"
+        color={isError ? "red.500" : "white"}
+      >
+        {output
+          ? output.map((line, i) => <Text key={i}>{line}</Text>)
+          : 'Click "Run Code" to see the output here'}
       </Box>
     </Box>
   );

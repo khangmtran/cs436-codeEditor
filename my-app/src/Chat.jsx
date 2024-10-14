@@ -1,14 +1,18 @@
-// Chat.js
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Box, Textarea, Button, VStack, HStack, Text } from "@chakra-ui/react";
 
-const Chat = () => {
+const Chat = ({ userName }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
+  const messagesEndRef = useRef(null); // Create a ref for the messages container
 
   const handleSendMessage = () => {
     if (input.trim() === "") return; // Prevent sending empty messages
-    setMessages((prevMessages) => [...prevMessages, input]);
+    // Add the user's name and message as an object
+    setMessages((prevMessages) => [
+      ...prevMessages,
+      { user: userName, text: input },
+    ]);
     setInput(""); // Clear the input field
   };
 
@@ -25,6 +29,13 @@ const Chat = () => {
     }
   };
 
+  // Auto-scroll to the bottom whenever messages change
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]); // Run this effect when the messages state changes
+
   return (
     <Box w="33%">
       <Text fontSize="lg" fontWeight="bold" mb={2}>
@@ -39,19 +50,25 @@ const Chat = () => {
         spacing={2}
         align="stretch"
       >
-        {/* Display chat messages */}
+        {/* Display chat messages with username */}
         <Box flexGrow={1} overflowY="auto" whiteSpace="pre-wrap">
           {messages.map((msg, index) => (
-            <Text key={index}>
-              {msg.split("\n").map((line, i) => (
-                <React.Fragment key={i}>
-                  {line}
-                  {i < msg.split("\n").length - 1 && <br />}{" "}
-                  {/* Add <br /> for new lines */}
-                </React.Fragment>
-              ))}
-            </Text>
+            <Box key={index} mb={2}>
+              {/* Display the username in bold */}
+              <Text fontWeight="bold">{msg.user}:</Text>
+              {/* Display the message */}
+              <Text>
+                {msg.text.split("\n").map((line, i) => (
+                  <React.Fragment key={i}>
+                    {line}
+                    {i < msg.text.split("\n").length - 1 && <br />}{" "}
+                    {/* Add <br /> for new lines */}
+                  </React.Fragment>
+                ))}
+              </Text>
+            </Box>
           ))}
+          <div ref={messagesEndRef} /> {/* Add a div at the end of messages */}
         </Box>
 
         {/* Send message input and button */}
