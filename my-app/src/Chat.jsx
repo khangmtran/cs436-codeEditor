@@ -1,40 +1,81 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Box, Textarea, Button, VStack, HStack, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Textarea,
+  Button,
+  VStack,
+  HStack,
+  Text,
+  Input,
+  Image,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalBody,
+} from "@chakra-ui/react";
 
 const Chat = ({ userName }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-  const messagesEndRef = useRef(null); // Create a ref for the messages container
+  const [zoomedImage, setZoomedImage] = useState(null);
+  const messagesEndRef = useRef(null);
 
   const handleSendMessage = () => {
-    if (input.trim() === "") return; // Prevent sending empty messages
-    // Add the user's name and message as an object
+    if (input.trim() === "") return;
     setMessages((prevMessages) => [
       ...prevMessages,
-      { user: userName, text: input },
+      { user: userName, text: input, type: "text" },
     ]);
-    setInput(""); // Clear the input field
+    setInput("");
+  };
+
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const fileUrl = URL.createObjectURL(file);
+      const fileType = file.type.startsWith("image/") ? "image" : "file";
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        {
+          user: userName,
+          fileName: file.name,
+          fileUrl,
+          type: fileType,
+        },
+      ]);
+    }
   };
 
   const handleEnter = (event) => {
     if (event.key === "Enter" && !event.shiftKey) {
       handleSendMessage();
-      event.preventDefault(); // Prevent adding a new line in the textarea
+      event.preventDefault();
     } else if (event.key === "Enter" && event.shiftKey) {
-      // If Shift + Enter is pressed, allow new line
       setInput((prevInput) => prevInput + "\n");
     } else if (event.key === "Tab") {
-      event.preventDefault(); // Prevent the default tab behavior
-      setInput((prevInput) => prevInput + "  "); // Add two spaces for indentation
+      event.preventDefault();
+      setInput((prevInput) => prevInput + "  ");
     }
   };
 
-  // Auto-scroll to the bottom whenever messages change
+  const handleImageClick = (imageUrl) => {
+    setZoomedImage(imageUrl);
+  };
+
+  const handleCloseModal = () => {
+    setZoomedImage(null);
+  };
+
   useEffect(() => {
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+      const lastMessage = messages[messages.length - 1];
+      const delay = lastMessage && lastMessage.type === "image" ? 100 : 0;
+
+      setTimeout(() => {
+        messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+      }, delay);
     }
-  }, [messages]); // Run this effect when the messages state changes
+  }, [messages]);
 
   return (
     <Box w="33%">
@@ -50,42 +91,92 @@ const Chat = ({ userName }) => {
         spacing={2}
         align="stretch"
       >
-        {/* Display chat messages with username */}
         <Box flexGrow={1} overflowY="auto" whiteSpace="pre-wrap">
           {messages.map((msg, index) => (
             <Box key={index} mb={2}>
-              {/* Display the username in bold */}
               <Text fontWeight="bold">{msg.user}:</Text>
-              {/* Display the message */}
-              <Text>
-                {msg.text.split("\n").map((line, i) => (
-                  <React.Fragment key={i}>
-                    {line}
-                    {i < msg.text.split("\n").length - 1 && <br />}{" "}
-                    {/* Add <br /> for new lines */}
-                  </React.Fragment>
-                ))}
-              </Text>
+              {msg.type === "text" ? (
+                <Text>
+                  {msg.text.split("\n").map((line, i) => (
+                    <React.Fragment key={i}>
+                      {line}
+                      {i < msg.text.split("\n").length - 1 && <br />}
+                    </React.Fragment>
+                  ))}
+                </Text>
+              ) : msg.type === "image" ? (
+                <Image
+                  src={msg.fileUrl}
+                  alt={msg.fileName}
+                  maxH="150px"
+                  cursor="pointer"
+                  onClick={() => handleImageClick(msg.fileUrl)}
+                />
+              ) : (
+                <a
+                  href={msg.fileUrl}
+                  download={msg.fileName}
+                  style={{ color: "lightblue", textDecoration: "underline" }}
+                >
+                  {msg.fileName}
+                </a>
+              )}
             </Box>
           ))}
-          <div ref={messagesEndRef} /> {/* Add a div at the end of messages */}
+          <div ref={messagesEndRef} />
         </Box>
 
-        {/* Send message input and button */}
         <HStack>
           <Textarea
             placeholder="Type your message..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleEnter} // Add onKeyDown for Enter and Tab detection
+            onKeyDown={handleEnter}
             size="sm"
             resize="none"
           />
           <Button onClick={handleSendMessage} colorScheme="blue" size="sm">
             Send
           </Button>
+          <Input
+            type="file"
+            onChange={handleFileUpload}
+            accept=".doc,.pdf,.png,.jpg,.jpeg,.py"
+            display="none"
+            id="fileUpload"
+          />
+          <Button
+            as="label"
+            cursor="pointer"
+            htmlFor="fileUpload"
+            colorScheme="blue"
+            size="sm"
+          >
+            Upload
+          </Button>
         </HStack>
       </VStack>
+
+      {/* Modal for Zoomed Image */}
+      <Modal isOpen={!!zoomedImage} onClose={handleCloseModal}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalBody
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            p={0}
+          >
+            <Image
+              src={zoomedImage}
+              alt="Zoomed In"
+              maxW="100vw"
+              maxH="100vh"
+              objectFit="contain"
+            />
+          </ModalBody>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 };
