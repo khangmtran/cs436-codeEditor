@@ -8,7 +8,7 @@ const Output = ({ output, isError }) => {
         Output
       </Text>
       <Box
-        height="75vh"
+        height="73vh"
         p={2}
         backgroundColor="#1e1e1e"
         color={isError ? "red.500" : "white"}

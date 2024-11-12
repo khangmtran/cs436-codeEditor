@@ -83,7 +83,7 @@ const Chat = ({ userName }) => {
         Chat
       </Text>
       <VStack
-        height="75vh"
+        height="73vh"
         p={2}
         border="1px solid"
         borderRadius={4}
