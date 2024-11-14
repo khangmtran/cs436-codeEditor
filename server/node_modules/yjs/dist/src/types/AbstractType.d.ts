@@ -1,3 +1,4 @@
+export function warnPrematureAccess(): void;
 export class ArraySearchMarker {
     /**
      * @param {Item} p
@@ -158,7 +159,9 @@ export function typeMapGetAllSnapshot(parent: AbstractType<any>, snapshot: Snaps
         [x: string]: any;
     } | number | null | Array<any> | string | Uint8Array | AbstractType<any> | undefined;
 };
-export function createMapIterator(map: Map<string, Item>): IterableIterator<Array<any>>;
+export function createMapIterator(type: AbstractType<any> & {
+    _map: Map<string, Item>;
+}): IterableIterator<Array<any>>;
 import { Item } from "../structs/Item.js";
 import { Transaction } from "../utils/Transaction.js";
 import { Doc } from "../utils/Doc.js";
