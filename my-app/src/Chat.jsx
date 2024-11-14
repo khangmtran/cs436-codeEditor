@@ -78,7 +78,7 @@ const Chat = ({ userName }) => {
   }, [messages]);
 
   return (
-    <Box w="33%">
+    <Box w="20%">
       <Text fontSize="lg" fontWeight="bold" mb={2}>
         Chat
       </Text>

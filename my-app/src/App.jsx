@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useEffect } from "react";
 import {
   Box,
   Button,
@@ -21,6 +22,17 @@ const App = () => {
       setIsNameSet(true); // Set name only if it's not empty
     }
   };
+
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+        event.preventDefault();
+        event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+        window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, []);
 
   return (
     <Box bg="black" px={5} py={20} height="100vh">

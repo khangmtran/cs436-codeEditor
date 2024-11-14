@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import {
   Box,
   HStack,
@@ -72,6 +73,23 @@ const CodeEditor = ({ userName }) => {
     URL.revokeObjectURL(url);
   };
 
+  // Enable Ctrl+S or Cmd+S save file mechanism
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      // Check for Ctrl+S or Cmd+S
+      if ((event.ctrlKey || event.metaKey) && event.key === "s") {
+          event.preventDefault();
+          downloadFile(); // Call the download function
+      }
+    };
+    
+    // Attach the event listener
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+        document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
   const addNewTab = () => {
     const newTab = {
       id: tabs.length + 1,
@@ -128,7 +146,7 @@ const CodeEditor = ({ userName }) => {
   return (
     <Box>
       <HStack spacing={5}>
-        <Box w="33%" mt="-35">
+        <Box w="40%" mt="-35">
           <HStack spacing={3} mb={2}>
             <Text fontSize="lg" fontWeight="bold">
               Code
