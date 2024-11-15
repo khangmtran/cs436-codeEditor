@@ -36,10 +36,29 @@ const folderSchema = new mongoose.Schema({
   },
 });
 
+
 folderSchema.pre('save', function (next) {
   this.updatedAt = Date.now();
   next();
 });
+
+// List all files in a specific folder
+folderSchema.statics.listFilesInFolder = async function(folderId) {
+  const Folder = this;
+  const folder = await Folder.findById(folderId).populate('files');
+  return folder ? folder.files : [];
+};
+
+// Move file between folders
+folderSchema.statics.moveFileToFolder = async function(fileId, newFolderId) {
+  const Folder = this;
+  const newFolder = await Folder.findById(newFolderId);
+  if (newFolder) {
+      await File.findByIdAndUpdate(fileId, { parentFolder: newFolderId });
+      return true;
+  }
+  return false;
+};
 
 const Folder = mongoose.model('Folder', folderSchema);
 module.exports = Folder;

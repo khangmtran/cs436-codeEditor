@@ -1,47 +1,56 @@
-const express = require('express')
+// Imports
+require('dotenv').config();
+const express = require('express');
+const http = require('http');
 const WebSocket = require('ws');
-const { setupWSConnection } = require('y-websocket/bin/utils');
 const cors = require('cors');
-const http = require('http'); // Import the http module
+const connectDB = require('./src/utils/database'); // Import DB connection
+const authRoutes = require('./src/routes/authRoutes.js');
+const fileRoutes = require('./src/routes/fileRoutes.js');
+const folderRoutes = require('./src/routes/folderRoutes.js');
+const projectRoutes = require('./src/routes/projectRoutes.js');
 
-//Routes
-const authRoutes = require('./src/routes/authRoutes.js')
 
 const app = express()
+const server = http.createServer(app)
+const wss = new WebSocket.Server({ server });
 
-const mongoose = require('mongoose')
-
-app.use(cors())
+// Middleware
 app.use(express.json())
-// log to the server any requests
+app.use(cors())
+
+// Request Logging Middleware
 app.use((req,res,next) =>{
-    console.log(req.path,req.params)
-    next()
+  console.log(req.path,req.params)
+  next()
 })
-//mount routes
-app.use('/api/authRoutes',authRoutes)
+
+// Mount routes
+app.use('/api/auth',authRoutes)
+app.use('/api/file',fileRoutes)
+app.use('/api/folder', folderRoutes);
+app.use('/api/project', projectRoutes);
+console.log('File routes mounted at /api/file');
+console.log('Folder routes mounted at /api/folders');
+console.log('Project routes mounted at /api/projects');
+
+
 
 // Placeholder Code for running, will be replaces with a code Routes or something
 app.post('/run', async (req, res) => {
     res.json({ output: 'Hello from the code execution endpoint!' });
   });
 
-
-const server = http.createServer(app);
-
 // Create a WebSocket server attached to the HTTP server
-const wss = new WebSocket.Server({ server });
- wss.on('connection', (ws, req) => {
+wss.on('connection', (ws, req) => {
   setupWSConnection(ws, req);
 });
 console.log('conneceted to wss')
-// Connect to MongoDB and start the server
-mongoose.connect("mongodb+srv://root:R5O4lPtZsjhGczBC@collabcodeeditor.z5wf5.mongodb.net/")
-  .then(() => {
-    server.listen(4000, () => {
-      console.log('HTTP and WebSocket server running on http://localhost:4000');
+
+// Start Server
+const PORT = process.env.PORT || 4000;
+connectDB().then(() => {
+    server.listen(PORT, () => {
+        console.log(`Server is running on http://localhost:${PORT}`);
     });
-  })
-  .catch((error) => {
-    console.log(error);
-  });
+});

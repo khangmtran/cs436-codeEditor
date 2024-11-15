@@ -15,12 +15,12 @@ const fileSchema = new mongoose.Schema({
     required: true, 
   },
   parentFolder: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,  // Mongoose.Shchema.Types.ObjectId
     ref: 'Folder',
     default: null,
   },
   project: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,  // Mongoose.Shchema.Types.ObjectId
     ref: 'Project',
     required: true,
   },
@@ -38,10 +38,30 @@ const fileSchema = new mongoose.Schema({
   },
 });
 
+
 fileSchema.pre('save', function (next) {
   this.updatedAt = Date.now();
   next();
 });
+
+
+// File-specific CRUD Operations
+fileSchema.statics.createFile = async function({ name, content, type, parentFolder, project }) {
+  return this.create({ name, content, type, parentFolder, project });
+};
+
+fileSchema.statics.findFileById = async function(id) {
+  return this.findById(id);
+};
+
+fileSchema.statics.updateFileById = async function(id, updates) {
+  return this.findByIdAndUpdate(id, updates, { new: true });
+};
+
+fileSchema.statics.deleteFileById = async function(id) {
+  return this.findByIdAndDelete(id);
+};
+
 
 const File = mongoose.model('File', fileSchema);
 module.exports = File;
