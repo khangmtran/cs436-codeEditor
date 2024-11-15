@@ -10,7 +10,6 @@ const fileRoutes = require('./src/routes/fileRoutes.js');
 const folderRoutes = require('./src/routes/folderRoutes.js');
 const projectRoutes = require('./src/routes/projectRoutes.js');
 
-
 const app = express()
 const server = http.createServer(app)
 const wss = new WebSocket.Server({ server });
