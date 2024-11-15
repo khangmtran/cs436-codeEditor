@@ -2,6 +2,7 @@
 const express = require('express')
 const router = express.Router()
 const authControllers = require('../controllers/authControllers.js')
+const authenticate = require('../middleware/authenticate.js')
 
 // Functionality
 router.post('/signup', (req, res, next) => {
@@ -9,6 +10,7 @@ router.post('/signup', (req, res, next) => {
     next();
 }, authControllers.createUser);
 router.post('/login', authControllers.loginUser)
+router.get('/projects', authenticate, authControllers.getUserProjects);
 
 // Export
 module.exports = router

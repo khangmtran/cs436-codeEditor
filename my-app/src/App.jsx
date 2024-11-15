@@ -12,6 +12,7 @@ import {
 } from "@chakra-ui/react";
 import CodeEditor from "./CodeEditor";
 import axios from 'axios';
+import Dashboard from './Dashboard'; // Ensure you have a Dashboard component
 
 const App = () => {
   const [isNameSet, setIsNameSet] = useState(false); // Track whether the name is set
@@ -24,6 +25,8 @@ const App = () => {
     email: '',
     password: ''
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null); // Track selected project
 
   const handleNameSubmit = () => {
     if (userName.trim() !== "") {
@@ -59,16 +62,24 @@ const App = () => {
       setIsAuthenticated(true);
       alert('Login successful');
     } catch (error) {
-      console.error('Registration failed:', error.response ? error.response.data : error.message);
+      console.error('Login failed:', error.response ? error.response.data : error.message);
       alert('Login failed');
     }
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   return (
     <Box bg="black" px={5} py={20} height="100vh">
       {isAuthenticated ? (
         <>
-          <CodeEditor userName={userName} /> {/* Pass userName here */}
+          {!selectedProject ? (
+            <Dashboard setSelectedProject={setSelectedProject} /> // Pass setSelectedProject to Dashboard
+          ) : (
+            <CodeEditor userName={userName} project={selectedProject} /> // Pass selectedProject to CodeEditor
+          )}
           {/* Modal that appears when user lands on the page */}
           <Modal
             isOpen={!isNameSet}
@@ -116,12 +127,26 @@ const App = () => {
                 placeholder="Email"
                 onChange={handleChange}
               />
-              <Input
-                type="password"
-                name="password"
-                placeholder="Password"
-                onChange={handleChange}
-              />
+              <div style={{ position: 'relative' }}>
+                <Input
+                  type={showPassword ? 'text' : 'password'}
+                  name="password"
+                  placeholder="Password"
+                  onChange={handleChange}
+                />
+                <span
+                  onClick={togglePasswordVisibility}
+                  style={{
+                    position: 'absolute',
+                    right: '10px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {showPassword ? '🙈' : '👁️'}
+                </span>
+              </div>
               <Button type="submit" colorScheme="blue">
                 Register
               </Button>
@@ -138,7 +163,7 @@ const App = () => {
                 onChange={handleChange}
               />
               <Input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 name="password"
                 placeholder="Password"
                 onChange={handleChange}
