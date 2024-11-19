@@ -98,10 +98,6 @@ const Dashboard = ({ setSelectedProject }) => {
         </List>
       )}
 
-      <Button mt={4} colorScheme="blue" onClick={() => setIsCreating(true)}>
-        Create New Project
-      </Button>
-
       {/* Modal for creating a new project */}
       <Modal isOpen={isCreating} onClose={() => setIsCreating(false)}>
         <ModalOverlay />
