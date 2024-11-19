@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import {
   Box,
   HStack,
@@ -20,13 +20,12 @@ import {
   ModalBody,
   ModalFooter,
 } from "@chakra-ui/react";
-import { useRef, useState } from "react";
 import { Editor } from "@monaco-editor/react";
 import { CloseIcon } from "@chakra-ui/icons";
 import Output from "./Output";
 import Chat from "./Chat";
 import GetLinkButton from "./GetLinkButton";
-import { executeCode } from "./api";
+import { executeCode } from "./pistonAPI";
 
 const CodeEditor = ({ userName }) => {
   const editorRefs = useRef({}); // Create a ref object to store refs for each tab's editor

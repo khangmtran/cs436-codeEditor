@@ -30,10 +30,8 @@ app.use('/api/file',fileRoutes)
 app.use('/api/folder', folderRoutes);
 app.use('/api/project', projectRoutes);
 console.log('File routes mounted at /api/file');
-console.log('Folder routes mounted at /api/folders');
-console.log('Project routes mounted at /api/projects');
-
-
+console.log('Folder routes mounted at /api/folder');
+console.log('Project routes mounted at /api/project');
 
 // Placeholder Code for running, will be replaces with a code Routes or something
 app.post('/run', async (req, res) => {
@@ -44,7 +42,7 @@ app.post('/run', async (req, res) => {
 wss.on('connection', (ws, req) => {
   setupWSConnection(ws, req);
 });
-console.log('conneceted to wss')
+console.log('connected to wss')
 
 // Start Server
 const PORT = process.env.PORT || 4000;

@@ -44,7 +44,11 @@ const App = () => {
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:4000/api/authRoutes/register', formData);
+      const response = await axios.post('http://localhost:4000/api/auth/signup', formData, {
+        headers: {
+            'Content-Type': 'application/json',
+        },
+      });
       localStorage.setItem('token', response.data.token);
       setIsAuthenticated(true);
       alert('Registration successful');
@@ -57,8 +61,11 @@ const App = () => {
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:4000/api/authRoutes/login', formData);
-      localStorage.setItem('token', response.data.token);
+      const response = await axios.post('http://localhost:4000/api/auth/login', formData, {
+        headers: {
+            'Content-Type': 'application/json',
+        },
+      });      localStorage.setItem('token', response.data.token);
       setIsAuthenticated(true);
       alert('Login successful');
     } catch (error) {
