@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const User = require('../models/User'); // Ensure consistent casing
+const User = require('../models/user'); // Ensure consistent casing
 // Function to create JWT token
 const createToken = (userId) => {
   return jwt.sign({ userId }, 'adlerkhangfemorjaydencsc', { expiresIn: '1h' }); // Replace with your actual secret

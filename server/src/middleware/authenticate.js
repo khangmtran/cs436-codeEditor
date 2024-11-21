@@ -15,7 +15,7 @@ const authenticate = async (req, res, next) => {
       console.log("usernotefound")
       return res.status(401).json({ message: 'User not found' });
     }
-    console.log('uerfound')
+    console.log(' user authenticated')
     req.user = user; // Set the entire user object to req.user
     next();
   } catch (error) {

@@ -49,7 +49,7 @@ const Dashboard = ({ setSelectedProject }) => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
-        "http://localhost:4000/api/projects",
+        "http://localhost:4000/api/project/create",
         { name: newProjectName }, // Only send the project name
         {
           headers: { Authorization: `Bearer ${token}` },

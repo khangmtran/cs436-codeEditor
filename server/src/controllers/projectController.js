@@ -1,14 +1,22 @@
 const Project = require('../models/project.js');
 const Folder = require('../models/folder.js');
 const File = require('../models/file.js');
-
+const User = require('../models/user.js');
 // POST Create a Project
 const createProject = async (req, res) => {
-    const { name, description, owner } = req.body;
+    console.log('attempting create project')
+    const { name, description} = req.body;
+    console.log(req.user)
+    const owner = req.user._id;
     try {
         const project = await Project.create({ name, description, owner });
+
+        await User.findByIdAndUpdate(owner, { $push: { projectIDs: project._id } });
+
+        console.log("project created and added")
         res.status(200).json(project);
     } catch (error) {
+        console.log(error.message)
         res.status(400).json({ error: error.message });
     }
 };
