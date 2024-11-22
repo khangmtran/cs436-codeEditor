@@ -34,14 +34,14 @@ const loginUser = async (req, res) =>{
 }
 const getUserProjects = async (req, res) => {
   try {
-    console.log('req.user:', req.user); // Log req.user to verify it is set correctly
+    console.log("getting all projects")
     const userId = req.user._id; // Use req.user._id instead of req.user.id
     const user = await User.findById(userId).populate('projectIDs');
     if (!user) {
       console.log('User not found in getUserProjects');
       return res.status(404).json({ message: 'User not found' });
     }
-    res.json(user.projects);
+    res.json(user.projectIDs);
   } catch (error) {
     console.error('Error in getUserProjects:', error);
     res.status(500).json({ message: 'Server error' });

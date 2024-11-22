@@ -26,9 +26,10 @@ const Dashboard = ({ setSelectedProject }) => {
     const fetchProjects = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await axios.get("http://localhost:4000/api/project", {
+        const response = await axios.get("http://localhost:4000/api/auth/projects", {
           headers: { Authorization: `Bearer ${token}` },
         });
+        console.log(response.data)
         setProjects(response.data);
       } catch (error) {
         console.error("Failed to fetch projects:", error);
@@ -76,15 +77,13 @@ const Dashboard = ({ setSelectedProject }) => {
       {projects.length === 0 ? (
         <Box>
           <Text>No projects found. Create one to get started!</Text>
-          <Button colorScheme="blue" onClick={() => setIsCreating(true)}>
-            Create New Project
-          </Button>
+
         </Box>
       ) : (
         <List spacing={3}>
           {projects.map((project) => (
             <ListItem
-              key={project.id}
+              key={project._id}
               border="1px solid"
               borderColor="gray.300"
               p={3}
@@ -96,7 +95,13 @@ const Dashboard = ({ setSelectedProject }) => {
             </ListItem>
           ))}
         </List>
-      )}
+      )}          
+       {/* Add spacing between the list and the button */}
+  <Box mt={4}>
+    <Button colorScheme="blue" onClick={() => setIsCreating(true)}>
+      Create New Project
+    </Button>
+  </Box>
 
       {/* Modal for creating a new project */}
       <Modal isOpen={isCreating} onClose={() => setIsCreating(false)}>
