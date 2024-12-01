@@ -11,8 +11,8 @@ import {
   ModalFooter,
 } from "@chakra-ui/react";
 import CodeEditor from "./CodeEditor";
-import axios from 'axios';
-import Dashboard from './Dashboard'; // Ensure you have a Dashboard component
+import axios from "axios";
+import Dashboard from "./Dashboard"; // Ensure you have a Dashboard component
 
 const App = () => {
   const [isNameSet, setIsNameSet] = useState(false); // Track whether the name is set
@@ -20,10 +20,10 @@ const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false); // Track authentication status
   const [isRegistering, setIsRegistering] = useState(false); // Track if user is registering
   const [formData, setFormData] = useState({
-    fname: '',
-    lname: '',
-    email: '',
-    password: ''
+    fname: "",
+    lname: "",
+    email: "",
+    password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null); // Track selected project
@@ -37,40 +37,55 @@ const App = () => {
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:4000/api/auth/signup', formData, {
-        headers: {
-            'Content-Type': 'application/json',
-        },
-      });
-      localStorage.setItem('token', response.data.token);
+      const response = await axios.post(
+        "http://localhost:4000/api/auth/signup",
+        formData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      localStorage.setItem("token", response.data.token);
       setIsAuthenticated(true);
-      alert('Registration successful');
+      alert("Registration successful");
     } catch (error) {
-      console.error('Registration failed:', error.response ? error.response.data : error.message);
-      alert('Registration failed');
+      console.error(
+        "Registration failed:",
+        error.response ? error.response.data : error.message
+      );
+      alert("Registration failed");
     }
   };
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:4000/api/auth/login', formData, {
-        headers: {
-            'Content-Type': 'application/json',
-        },
-      });      localStorage.setItem('token', response.data.token);
+      const response = await axios.post(
+        "http://localhost:4000/api/auth/login",
+        formData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      localStorage.setItem("token", response.data.token);
       setIsAuthenticated(true);
-      alert('Login successful');
+      alert("Login successful");
     } catch (error) {
-      console.error('Login failed:', error.response ? error.response.data : error.message);
-      alert('Login failed');
+      console.error(
+        "Login failed:",
+        error.response ? error.response.data : error.message
+      );
+      alert("Login failed");
     }
   };
 
@@ -85,7 +100,11 @@ const App = () => {
           {!selectedProject ? (
             <Dashboard setSelectedProject={setSelectedProject} /> // Pass setSelectedProject to Dashboard
           ) : (
-            <CodeEditor userName={userName} project={selectedProject} /> // Pass selectedProject to CodeEditor
+            <CodeEditor
+              userName={userName}
+              project={selectedProject}
+              setSelectedProject={setSelectedProject}
+            /> // Pass selectedProject to CodeEditor
           )}
           {/* Modal that appears when user lands on the page */}
           <Modal
@@ -134,9 +153,9 @@ const App = () => {
                 placeholder="Email"
                 onChange={handleChange}
               />
-              <div style={{ position: 'relative' }}>
+              <div style={{ position: "relative" }}>
                 <Input
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   name="password"
                   placeholder="Password"
                   onChange={handleChange}
@@ -144,14 +163,14 @@ const App = () => {
                 <span
                   onClick={togglePasswordVisibility}
                   style={{
-                    position: 'absolute',
-                    right: '10px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    cursor: 'pointer'
+                    position: "absolute",
+                    right: "10px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    cursor: "pointer",
                   }}
                 >
-                  {showPassword ? '🙈' : '👁️'}
+                  {showPassword ? "🙈" : "👁️"}
                 </span>
               </div>
               <Button type="submit" colorScheme="blue">
@@ -170,7 +189,7 @@ const App = () => {
                 onChange={handleChange}
               />
               <Input
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword ? "text" : "password"}
                 name="password"
                 placeholder="Password"
                 onChange={handleChange}

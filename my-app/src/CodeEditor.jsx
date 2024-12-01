@@ -21,13 +21,13 @@ import {
   ModalFooter,
 } from "@chakra-ui/react";
 import { Editor } from "@monaco-editor/react";
-import { CloseIcon } from "@chakra-ui/icons";
+import { CloseIcon, ArrowBackIcon } from "@chakra-ui/icons";
 import Output from "./Output";
 import Chat from "./Chat";
 import GetLinkButton from "./GetLinkButton";
 import { executeCode } from "./pistonAPI";
 
-const CodeEditor = ({ userName , project}) => {
+const CodeEditor = ({ userName, project, setSelectedProject }) => {
   const editorRefs = useRef({}); // Create a ref object to store refs for each tab's editor
   const [tabs, setTabs] = useState([{ id: 1, name: "file1.py", content: "" }]);
   const [currentTab, setCurrentTab] = useState(1);
@@ -77,15 +77,15 @@ const CodeEditor = ({ userName , project}) => {
     const handleKeyDown = (event) => {
       // Check for Ctrl+S or Cmd+S
       if ((event.ctrlKey || event.metaKey) && event.key === "s") {
-          event.preventDefault();
-          downloadFile(); // Call the download function
+        event.preventDefault();
+        downloadFile(); // Call the download function
       }
     };
-    
+
     // Attach the event listener
     document.addEventListener("keydown", handleKeyDown);
     return () => {
-        document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
 
@@ -144,6 +144,16 @@ const CodeEditor = ({ userName , project}) => {
 
   return (
     <Box>
+      <Box position="absolute" top={4} right={4}>
+        <Button
+          leftIcon={<ArrowBackIcon />}
+          colorScheme="gray"
+          variant="outline"
+          onClick={() => setSelectedProject(null)}
+        >
+          Back to Dashboard
+        </Button>
+      </Box>
       <HStack spacing={5}>
         <Box w="40%" mt="-35">
           <HStack spacing={3} mb={2}>
@@ -208,7 +218,7 @@ const CodeEditor = ({ userName , project}) => {
         </Box>
 
         <Output output={output} isError={isError} />
-        <Chat userName={userName} project = {project} />
+        <Chat userName={userName} project={project} />
       </HStack>
 
       <Box textAlign="center" mr="40%" mt={2}>
@@ -222,7 +232,7 @@ const CodeEditor = ({ userName , project}) => {
         </Button>
       </Box>
       <Box textAlign="center" mt={5}>
-        <GetLinkButton projectId = {project._id} />
+        <GetLinkButton projectId={project._id} />
       </Box>
 
       {/* Rename Tab Modal */}
