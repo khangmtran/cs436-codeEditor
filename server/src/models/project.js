@@ -30,10 +30,10 @@ const projectSchema = new mongoose.Schema({
     ref: 'File',
     default: [],
   },
-  chatID: {
+  chats: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Chat',
-  },
+  }],
   createdAt: {
     type: Date,
     default: Date.now,

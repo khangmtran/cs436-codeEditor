@@ -9,7 +9,7 @@ const authRoutes = require('./src/routes/authRoutes.js');
 const fileRoutes = require('./src/routes/fileRoutes.js');
 const folderRoutes = require('./src/routes/folderRoutes.js');
 const projectRoutes = require('./src/routes/projectRoutes.js');
-
+const chatRoutes = require('./src/routes/chatRoutes.js');
 const app = express()
 const server = http.createServer(app)
 const wss = new WebSocket.Server({ server });
@@ -29,9 +29,12 @@ app.use('/api/auth',authRoutes)
 app.use('/api/file',fileRoutes)
 app.use('/api/folder', folderRoutes);
 app.use('/api/project', projectRoutes);
+app.use('/api/chat', chatRoutes);
 console.log('File routes mounted at /api/file');
 console.log('Folder routes mounted at /api/folder');
 console.log('Project routes mounted at /api/project');
+console.log('Project chats mounted at /api/chat');
+
 
 // Placeholder Code for running, will be replaces with a code Routes or something
 app.post('/run', async (req, res) => {

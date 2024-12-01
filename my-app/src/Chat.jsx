@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import axios from "axios";
 import {
   Box,
   Textarea,
@@ -14,19 +15,41 @@ import {
   ModalBody,
 } from "@chakra-ui/react";
 
-const Chat = ({ userName }) => {
+const Chat = ({ userName, project }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [zoomedImage, setZoomedImage] = useState(null);
   const messagesEndRef = useRef(null);
 
-  const handleSendMessage = () => {
+  useEffect(() => {
+    const fetchChats = async () => {
+      try {
+        const response = await axios.get(`/api/chat/${project._id}`);
+        console.log(response.data.chats);
+        setMessages(response.data.chats || []); // Set the fetched chats as previous messages or an empty array
+      } catch (error) {
+        console.error('Error fetching chats:', error);
+      }
+    };
+
+    if (project) {
+      fetchChats();
+    }
+  }, [project]);
+
+  
+  const handleSendMessage = async () => {
     if (input.trim() === "") return;
-    setMessages((prevMessages) => [
-      ...prevMessages,
-      { user: userName, text: input, type: "text" },
-    ]);
-    setInput("");
+
+    const newMessage = { user: userName, text: input, type: "text" };
+
+    try {
+      const response = await axios.post(`/api/chat/${project._id}/message`, newMessage);
+      setMessages((prevMessages) => [...prevMessages, response.data]);
+      setInput("");
+    } catch (error) {
+      console.error('Error sending message:', error);
+    }
   };
 
   const handleFileUpload = (event) => {
@@ -54,7 +77,7 @@ const Chat = ({ userName }) => {
       setInput((prevInput) => prevInput + "\n");
     } else if (event.key === "Tab") {
       event.preventDefault();
-      setInput((prevInput) => prevInput + "  ");
+      setInput((prevInput) => prevInput + "\t");
     }
   };
 
@@ -66,22 +89,13 @@ const Chat = ({ userName }) => {
     setZoomedImage(null);
   };
 
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      const lastMessage = messages[messages.length - 1];
-      const delay = lastMessage && lastMessage.type === "image" ? 100 : 0;
-
-      setTimeout(() => {
-        messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-      }, delay);
-    }
-  }, [messages]);
-
   return (
-    <Box w="20%">
-      <Text fontSize="lg" fontWeight="bold" mb={2}>
-        Chat
-      </Text>
+    <Box>
+      {project ? (
+        <Text>Project: {project.name}</Text>
+      ) : (
+        <Text color="red">No project prop passed!</Text>
+      )}
       <VStack
         height="73vh"
         p={2}
@@ -94,86 +108,41 @@ const Chat = ({ userName }) => {
         <Box flexGrow={1} overflowY="auto" whiteSpace="pre-wrap">
           {messages.map((msg, index) => (
             <Box key={index} mb={2}>
-              <Text fontWeight="bold">{msg.user}:</Text>
-              {msg.type === "text" ? (
-                <Text>
-                  {msg.text.split("\n").map((line, i) => (
-                    <React.Fragment key={i}>
-                      {line}
-                      {i < msg.text.split("\n").length - 1 && <br />}
-                    </React.Fragment>
-                  ))}
-                </Text>
-              ) : msg.type === "image" ? (
+              <Text fontWeight="bold">
+                {msg.user}: {msg.text}
+              </Text>
+              {msg.type === "image" && (
                 <Image
                   src={msg.fileUrl}
-                  alt={msg.fileName}
-                  maxH="150px"
-                  cursor="pointer"
+                  alt="Chat Image"
                   onClick={() => handleImageClick(msg.fileUrl)}
+                  cursor="pointer"
                 />
-              ) : (
-                <a
-                  href={msg.fileUrl}
-                  download={msg.fileName}
-                  style={{ color: "lightblue", textDecoration: "underline" }}
-                >
-                  {msg.fileName}
-                </a>
               )}
             </Box>
           ))}
           <div ref={messagesEndRef} />
         </Box>
-
         <HStack>
           <Textarea
-            placeholder="Type your message..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleEnter}
+            placeholder="Type your message..."
             size="sm"
             resize="none"
           />
-          <Button onClick={handleSendMessage} colorScheme="blue" size="sm">
+          <Button onClick={handleSendMessage} colorScheme="blue">
             Send
           </Button>
-          <Input
-            type="file"
-            onChange={handleFileUpload}
-            accept=".doc,.pdf,.png,.jpg,.jpeg,.py"
-            display="none"
-            id="fileUpload"
-          />
-          <Button
-            as="label"
-            cursor="pointer"
-            htmlFor="fileUpload"
-            colorScheme="blue"
-            size="sm"
-          >
-            Upload
-          </Button>
+          <Input type="file" onChange={handleFileUpload} />
         </HStack>
       </VStack>
-
-      {/* Modal for Zoomed Image */}
-      <Modal isOpen={!!zoomedImage} onClose={handleCloseModal}>
+      <Modal isOpen={zoomedImage !== null} onClose={handleCloseModal}>
         <ModalOverlay />
         <ModalContent>
-          <ModalBody
-            display="flex"
-            justifyContent="center"
-            alignItems="center"
-            p={0}
-          >
-            <Image
-              src={zoomedImage}
-              alt="Zoomed In"
-              maxW="100vw"
-              maxH="100vh"
-              objectFit="contain"
-            />
+          <ModalBody>
+            <Image src={zoomedImage} alt="Zoomed Chat Image" />
           </ModalBody>
         </ModalContent>
       </Modal>

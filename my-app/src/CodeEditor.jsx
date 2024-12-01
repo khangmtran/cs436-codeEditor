@@ -27,7 +27,7 @@ import Chat from "./Chat";
 import GetLinkButton from "./GetLinkButton";
 import { executeCode } from "./pistonAPI";
 
-const CodeEditor = ({ userName }) => {
+const CodeEditor = ({ userName , project}) => {
   const editorRefs = useRef({}); // Create a ref object to store refs for each tab's editor
   const [tabs, setTabs] = useState([{ id: 1, name: "file1.py", content: "" }]);
   const [currentTab, setCurrentTab] = useState(1);
@@ -208,7 +208,7 @@ const CodeEditor = ({ userName }) => {
         </Box>
 
         <Output output={output} isError={isError} />
-        <Chat userName={userName} />
+        <Chat userName={userName} project = {project} />
       </HStack>
 
       <Box textAlign="center" mr="40%" mt={2}>
