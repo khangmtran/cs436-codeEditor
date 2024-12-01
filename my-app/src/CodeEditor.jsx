@@ -1,7 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 import {
   Box,
-  HStack,
   Button,
   Text,
   Tab,
@@ -22,13 +21,35 @@ import {
 } from "@chakra-ui/react";
 import { Editor } from "@monaco-editor/react";
 import { CloseIcon, ArrowBackIcon } from "@chakra-ui/icons";
+import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import Output from "./Output";
 import Chat from "./Chat";
 import GetLinkButton from "./GetLinkButton";
 import { executeCode } from "./pistonAPI";
 
+// Custom resize handle component
+const ResizeHandle = () => {
+  return (
+    <PanelResizeHandle className="panel-resize-handle">
+      <div
+        style={{
+          width: "2px",
+          height: "100%",
+          cursor: "col-resize",
+          backgroundColor: "transparent",
+          transition: "background-color 0.2s",
+        }}
+        onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#4A5568")}
+        onMouseOut={(e) =>
+          (e.currentTarget.style.backgroundColor = "transparent")
+        }
+      />
+    </PanelResizeHandle>
+  );
+};
+
 const CodeEditor = ({ userName, project, setSelectedProject }) => {
-  const editorRefs = useRef({}); // Create a ref object to store refs for each tab's editor
+  const editorRefs = useRef({});
   const [tabs, setTabs] = useState([{ id: 1, name: "file1.py", content: "" }]);
   const [currentTab, setCurrentTab] = useState(1);
   const [output, setOutput] = useState(null);
@@ -57,7 +78,7 @@ const CodeEditor = ({ userName, project, setSelectedProject }) => {
   };
 
   const onMount = (editor, tabId) => {
-    editorRefs.current[tabId] = editor; // Store each editor instance by tab ID
+    editorRefs.current[tabId] = editor;
     editor.focus();
   };
 
@@ -72,17 +93,14 @@ const CodeEditor = ({ userName, project, setSelectedProject }) => {
     URL.revokeObjectURL(url);
   };
 
-  // Enable Ctrl+S or Cmd+S save file mechanism
   useEffect(() => {
     const handleKeyDown = (event) => {
-      // Check for Ctrl+S or Cmd+S
       if ((event.ctrlKey || event.metaKey) && event.key === "s") {
         event.preventDefault();
-        downloadFile(); // Call the download function
+        downloadFile();
       }
     };
 
-    // Attach the event listener
     document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
@@ -124,13 +142,13 @@ const CodeEditor = ({ userName, project, setSelectedProject }) => {
       setCurrentTab(1);
     }
 
-    delete editorRefs.current[tabId]; // Remove the deleted tab's editor reference
+    delete editorRefs.current[tabId];
   };
 
   const handleTabDoubleClick = (tabId) => {
     const tab = tabs.find((tab) => tab.id === tabId);
     setNewTabName(tab.name);
-    onOpen(); // Open modal for renaming
+    onOpen();
   };
 
   const handleRenameSubmit = () => {
@@ -154,74 +172,86 @@ const CodeEditor = ({ userName, project, setSelectedProject }) => {
           Back to Dashboard
         </Button>
       </Box>
-      <HStack spacing={5}>
-        <Box w="40%" mt="-35">
-          <HStack spacing={3} mb={2}>
-            <Text fontSize="lg" fontWeight="bold">
-              Code
-            </Text>
-            <Button size="sm" onClick={addNewTab}>
-              +
-            </Button>
-            <Button size="sm" onClick={downloadFile}>
-              &#x2B73;
-            </Button>
-          </HStack>
 
-          <Tabs
-            isFitted
-            variant="enclosed"
-            index={tabs.findIndex((tab) => tab.id === currentTab)}
-          >
-            <TabList
-              style={{
-                overflowX: "auto", // Enable horizontal scroll
-                overflowY: "hidden", // Disable vertical scroll
-                maxWidth: "100%", // Limit the width of the tab area
-                whiteSpace: "nowrap", // Prevent tabs from wrapping to a new line
-              }}
+      <PanelGroup direction="horizontal">
+        <Panel defaultSize={40} minSize={10}>
+          <Box>
+            <Box display="flex" alignItems="center" gap={2} mb={2}>
+              <Text fontSize="lg" fontWeight="bold">
+                Code
+              </Text>
+              <Button size="sm" onClick={addNewTab}>
+                +
+              </Button>
+              <Button size="sm" onClick={downloadFile}>
+                &#x2B73;
+              </Button>
+            </Box>
+
+            <Tabs
+              isFitted
+              variant="enclosed"
+              index={tabs.findIndex((tab) => tab.id === currentTab)}
             >
-              {tabs.map((tab) => (
-                <Tab
-                  key={tab.id}
-                  onClick={() => handleTabChange(tab.id)}
-                  onDoubleClick={() => handleTabDoubleClick(tab.id)} // Handle double-click
-                >
-                  {tab.name}
-                  <IconButton
-                    size="xs"
-                    icon={<CloseIcon />}
-                    ml={2}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deleteTab(tab.id);
-                    }}
-                  />
-                </Tab>
-              ))}
-            </TabList>
-            <TabPanels>
-              {tabs.map((tab) => (
-                <TabPanel key={tab.id} p={0}>
-                  <Editor
-                    height="73vh"
-                    theme="vs-dark"
-                    defaultLanguage="python"
-                    value={tab.content}
-                    onMount={(editor) => onMount(editor, tab.id)}
-                    onChange={(value) => handleContentChange(value)}
-                  />
-                </TabPanel>
-              ))}
-            </TabPanels>
-          </Tabs>
-        </Box>
+              <TabList
+                style={{
+                  overflowX: "auto",
+                  overflowY: "hidden",
+                  maxWidth: "100%",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {tabs.map((tab) => (
+                  <Tab
+                    key={tab.id}
+                    onClick={() => handleTabChange(tab.id)}
+                    onDoubleClick={() => handleTabDoubleClick(tab.id)}
+                  >
+                    {tab.name}
+                    <IconButton
+                      size="xs"
+                      icon={<CloseIcon />}
+                      ml={2}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteTab(tab.id);
+                      }}
+                    />
+                  </Tab>
+                ))}
+              </TabList>
+              <TabPanels>
+                {tabs.map((tab) => (
+                  <TabPanel key={tab.id} p={0}>
+                    <Editor
+                      height="69vh"
+                      theme="vs-dark"
+                      defaultLanguage="python"
+                      value={tab.content}
+                      onMount={(editor) => onMount(editor, tab.id)}
+                      onChange={(value) => handleContentChange(value)}
+                    />
+                  </TabPanel>
+                ))}
+              </TabPanels>
+            </Tabs>
+          </Box>
+        </Panel>
 
-        <Output output={output} isError={isError} />
-        <Chat userName={userName} project={project} />
-      </HStack>
+        <ResizeHandle />
 
-      <Box textAlign="center" mr="40%" mt={2}>
+        <Panel defaultSize={30} minSize={10}>
+          <Output output={output} isError={isError} />
+        </Panel>
+
+        <ResizeHandle />
+
+        <Panel defaultSize={30} minSize={10}>
+          <Chat userName={userName} project={project} />
+        </Panel>
+      </PanelGroup>
+
+      <Box mt={2}>
         <Button
           variant="outline"
           colorScheme="green"
@@ -235,7 +265,6 @@ const CodeEditor = ({ userName, project, setSelectedProject }) => {
         <GetLinkButton projectId={project._id} />
       </Box>
 
-      {/* Rename Tab Modal */}
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>

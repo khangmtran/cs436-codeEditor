@@ -24,15 +24,18 @@ const Chat = ({ userName, project }) => {
   useEffect(() => {
     const fetchChats = async () => {
       try {
-        const token = localStorage.getItem('token'); // Replace with your method of storing the token
-        const response = await axios.get(`http://localhost:4000/api/chat/${project._id}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
+        const token = localStorage.getItem("token"); // Replace with your method of storing the token
+        const response = await axios.get(
+          `http://localhost:4000/api/chat/${project._id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
         setMessages(response.data.chats || []); // Set the fetched chats as previous messages or an empty array
       } catch (error) {
-        console.error('Error fetching chats:', error);
+        console.error("Error fetching chats:", error);
       }
     };
 
@@ -41,27 +44,30 @@ const Chat = ({ userName, project }) => {
     }
   }, [project]);
 
-  
   const handleSendMessage = async () => {
     if (input.trim() === "") return;
-  
+
     const newMessage = { user: userName, text: input, type: "text" };
-    const token = localStorage.getItem('token'); // Replace with your method of storing the token
-  
+    const token = localStorage.getItem("token"); // Replace with your method of storing the token
+
     try {
-      const response = await axios.post(`http://localhost:4000/api/chat/message/${project._id}`, newMessage, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        withCredentials: true, // Include cookies in the request
-      });
-  
+      const response = await axios.post(
+        `http://localhost:4000/api/chat/message/${project._id}`,
+        newMessage,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          withCredentials: true, // Include cookies in the request
+        }
+      );
+
       const data = response.data;
       setMessages((prevMessages) => [...prevMessages, data]);
       setInput("");
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error("Error sending message:", error);
     }
   };
   const handleFileUpload = (event) => {
@@ -102,9 +108,9 @@ const Chat = ({ userName, project }) => {
   };
 
   return (
-    <Box>
+    <Box h="100%" p ={1}>
       {project ? (
-        <Text>Project: {project.name}</Text>
+        <Text mb={2} fontSize="lg" fontWeight="bold">Project: {project.name}</Text>
       ) : (
         <Text color="red">No project prop passed!</Text>
       )}
@@ -120,7 +126,7 @@ const Chat = ({ userName, project }) => {
         <Box flexGrow={1} overflowY="auto" whiteSpace="pre-wrap">
           {messages.map((msg, index) => (
             <Box key={index} mb={2}>
-              <Text fontWeight="bold">
+              <Text>
                 {msg.userName}: {msg.message}
               </Text>
               {msg.type === "image" && (
