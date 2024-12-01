@@ -222,7 +222,7 @@ const CodeEditor = ({ userName , project}) => {
         </Button>
       </Box>
       <Box textAlign="center" mt={5}>
-        <GetLinkButton />
+        <GetLinkButton projectId = {project._id} />
       </Box>
 
       {/* Rename Tab Modal */}

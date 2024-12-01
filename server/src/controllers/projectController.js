@@ -17,7 +17,7 @@ const createProject = async (req, res) => {
         console.log(error.message)
         res.status(400).json({ error: error.message });
     }
-};
+}; 
 
 // GET Retrieve a Project by ID
 const getProject = async (req, res) => {
@@ -67,9 +67,51 @@ const deleteProject = async (req, res) => {
     }
 };
 
+const addCollaborator = async (req, res) => {
+    const { projectId } = req.params;
+    const { email } = req.body;
+
+    // Email validation regex
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(email)) {
+        return res.status(400).json({ error: "Invalid email format" });
+    }
+
+    try {
+        const user = await User.findOne({ email }).select('_id projectIDs');
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        const project = await Project.findById(projectId).select('collaborators');
+        if (!project) {
+            return res.status(404).json({ error: "Project not found" });
+        }
+        console.log(user)
+        // Add the project to the user's projects if not already added
+        if (!user.projectIDs.includes(projectId)) {
+            user.projectIDs.push(projectId);
+            await user.save();
+        }
+
+        // Add the user to the project's collaborators if not already added
+        if (!project.collaborators.includes(user._id)) {
+            project.collaborators.push(user._id);
+            await project.save();
+        }
+
+        res.status(200).json({ message: "User added as collaborator successfully" });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: error.message });
+    }
+}
+
 module.exports = {
     createProject,
     getProject,
     updateProject,
     deleteProject,
+    addCollaborator,
 };
