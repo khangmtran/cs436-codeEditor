@@ -3,7 +3,7 @@ import React from "react";
 
 const Output = ({ output, isError }) => {
   return (
-    <Box h="100%" p={1}>
+    <Box h="100%">
       <Text mb={2} fontSize="lg" fontWeight="bold">
         Output
       </Text>

@@ -33,16 +33,10 @@ const ResizeHandle = () => {
     <PanelResizeHandle className="panel-resize-handle">
       <div
         style={{
-          width: "2px",
+          width: "5px",
           height: "100%",
           cursor: "col-resize",
-          backgroundColor: "transparent",
-          transition: "background-color 0.2s",
         }}
-        onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#4A5568")}
-        onMouseOut={(e) =>
-          (e.currentTarget.style.backgroundColor = "transparent")
-        }
       />
     </PanelResizeHandle>
   );
@@ -174,7 +168,7 @@ const CodeEditor = ({ userName, project, setSelectedProject }) => {
       </Box>
 
       <PanelGroup direction="horizontal">
-        <Panel defaultSize={40} minSize={10}>
+        <Panel defaultSize={33} minSize={10}>
           <Box>
             <Box display="flex" alignItems="center" gap={2} mb={2}>
               <Text fontSize="lg" fontWeight="bold">
@@ -224,7 +218,7 @@ const CodeEditor = ({ userName, project, setSelectedProject }) => {
                 {tabs.map((tab) => (
                   <TabPanel key={tab.id} p={0}>
                     <Editor
-                      height="69vh"
+                      height="68.5vh"
                       theme="vs-dark"
                       defaultLanguage="python"
                       value={tab.content}
@@ -240,13 +234,13 @@ const CodeEditor = ({ userName, project, setSelectedProject }) => {
 
         <ResizeHandle />
 
-        <Panel defaultSize={30} minSize={10}>
+        <Panel defaultSize={33} minSize={10}>
           <Output output={output} isError={isError} />
         </Panel>
 
         <ResizeHandle />
 
-        <Panel defaultSize={30} minSize={10}>
+        <Panel defaultSize={33} minSize={10}>
           <Chat userName={userName} project={project} />
         </Panel>
       </PanelGroup>

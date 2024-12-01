@@ -108,9 +108,11 @@ const Chat = ({ userName, project }) => {
   };
 
   return (
-    <Box h="100%" p ={1}>
+    <Box h="100%">
       {project ? (
-        <Text mb={2} fontSize="lg" fontWeight="bold">Project: {project.name}</Text>
+        <Text mb={2} fontSize="lg" fontWeight="bold">
+          Project: {project.name}
+        </Text>
       ) : (
         <Text color="red">No project prop passed!</Text>
       )}
