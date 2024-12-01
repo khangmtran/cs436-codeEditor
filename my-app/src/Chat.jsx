@@ -24,8 +24,12 @@ const Chat = ({ userName, project }) => {
   useEffect(() => {
     const fetchChats = async () => {
       try {
-        const response = await axios.get(`/api/chat/${project._id}`);
-        console.log(response.data.chats);
+        const token = localStorage.getItem('token'); // Replace with your method of storing the token
+        const response = await axios.get(`http://localhost:4000/api/chat/${project._id}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
         setMessages(response.data.chats || []); // Set the fetched chats as previous messages or an empty array
       } catch (error) {
         console.error('Error fetching chats:', error);
@@ -40,18 +44,26 @@ const Chat = ({ userName, project }) => {
   
   const handleSendMessage = async () => {
     if (input.trim() === "") return;
-
+  
     const newMessage = { user: userName, text: input, type: "text" };
-
+    const token = localStorage.getItem('token'); // Replace with your method of storing the token
+  
     try {
-      const response = await axios.post(`/api/chat/${project._id}/message`, newMessage);
-      setMessages((prevMessages) => [...prevMessages, response.data]);
+      const response = await axios.post(`http://localhost:4000/api/chat/message/${project._id}`, newMessage, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        withCredentials: true, // Include cookies in the request
+      });
+  
+      const data = response.data;
+      setMessages((prevMessages) => [...prevMessages, data]);
       setInput("");
     } catch (error) {
       console.error('Error sending message:', error);
     }
   };
-
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -109,7 +121,7 @@ const Chat = ({ userName, project }) => {
           {messages.map((msg, index) => (
             <Box key={index} mb={2}>
               <Text fontWeight="bold">
-                {msg.user}: {msg.text}
+                {msg.userName}: {msg.message}
               </Text>
               {msg.type === "image" && (
                 <Image

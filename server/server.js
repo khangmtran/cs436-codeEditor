@@ -16,8 +16,12 @@ const wss = new WebSocket.Server({ server });
 
 // Middleware
 app.use(express.json())
-app.use(cors())
+const corsOptions = {
+  origin: 'http://localhost:5173', // Specify the exact origin
+  credentials: true, // Allow credentials (cookies)
+};
 
+app.use(cors(corsOptions));
 // Request Logging Middleware
 app.use((req,res,next) =>{
   console.log(req.path,req.params)

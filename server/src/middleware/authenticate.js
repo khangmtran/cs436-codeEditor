@@ -1,12 +1,16 @@
 const jwt = require('jsonwebtoken');
-const User = require('../models/User'); // Ensure consistent casing
+const User = require('../models/user.js'); // Ensure consistent casing
 
 const authenticate = async (req, res, next) => {
-  const token = req.header('Authorization').replace('Bearer ', '');
-  if (!token) {
+  const authHeader = req.header('Authorization');
+  if (!authHeader) {
     return res.status(401).json({ message: 'No token, authorization denied' });
   }
 
+  const token = authHeader.replace('Bearer ', '');
+  if (!token) {
+    return res.status(401).json({ message: 'No token, authorization denied' });
+  }
   try {
     const decoded = jwt.verify(token, 'adlerkhangfemorjaydencsc'); // Replace with your actual secret
     console.log("decode : " + decoded.userId)
