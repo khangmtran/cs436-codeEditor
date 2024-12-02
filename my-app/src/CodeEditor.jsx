@@ -82,10 +82,11 @@ const CodeEditor = ({ userName, project, setSelectedProject }) => {
       const message = JSON.parse(event.data);
       if (message.event === "file-update") {
         const { updatedTabId, updatedContent } = message.data;
+        console.log(message.data)
         // Update the content for the appropriate tab
         setTabs((prevTabs) =>
           prevTabs.map((tab) =>
-            tab.id === updatedTabId ? { ...tab, content: updatedContent } : tab
+            tab.fileId === updatedTabId ? { ...tab, content: updatedContent } : tab
           )
         );
       }
@@ -179,15 +180,19 @@ const CodeEditor = ({ userName, project, setSelectedProject }) => {
       );
     }, 300); // Adjust debounce delay as needed
   };
-
+  const getFileIdFromTab = (tabs, currentTabId) => {
+    const tab = tabs.find(tab => tab.id === currentTabId);
+    return tab ? tab.fileId : null;
+  };
+   
   const handleContentChange = (value) => {
     setTabs((prevTabs) =>
       prevTabs.map((tab) =>
         tab.id === currentTab ? { ...tab, content: value } : tab
       )
     );
-
-    debounceSendUpdate(currentTab, value); // Send debounced updates
+    const fileId = getFileIdFromTab(tabs, currentTab);
+    debounceSendUpdate(fileId, value); // Send debounced updates
   };
 
   const addNewTab = async () => {

@@ -69,7 +69,7 @@ const App = () => {
     e.preventDefault();
     try {
       const response = await axios.post(
-        `{baseUrl}/api/auth/login`,
+        `${baseUrl}/api/auth/login`,
         formData,
         {
           headers: {

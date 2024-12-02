@@ -71,11 +71,11 @@ wss.on('connection', (ws) => {
           break;
 
         case 'file-update':
-          const { projectId, updatedContent } = parsedMessage.data;
+          const { projectId, updatedContent,updatedTabId } = parsedMessage.data;
           // Broadcast file update to all clients in the project
           broadcastToProject(projectId, JSON.stringify({
             event: 'file-update',
-            data: { updatedContent },
+            data: { updatedContent, updatedTabId},
           }));
           break;
 
