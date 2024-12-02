@@ -19,10 +19,12 @@
     "chakra": "^0.0.3",
     "cors": "^2.8.5",
     "framer-motion": "^11.9.0",
+    "lodash": "^4.17.21",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-resizable-panels": "^2.1.7",
-    "react-resizeable": "^0.2.6"
+    "react-resizeable": "^0.2.6",
+    "react-router-dom": "^7.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",

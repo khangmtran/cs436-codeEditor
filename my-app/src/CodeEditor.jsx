@@ -28,22 +28,22 @@ import GetLinkButton from "./GetLinkButton";
 import { executeCode } from "./pistonAPI";
 
 // Custom resize handle component
-const ResizeHandle = () => {
-  return (
-    <PanelResizeHandle className="panel-resize-handle">
-      <div
-        style={{
-          width: "5px",
-          height: "100%",
-          cursor: "col-resize",
-        }}
-      />
-    </PanelResizeHandle>
-  );
-};
+const ResizeHandle = () => (
+  <PanelResizeHandle className="panel-resize-handle">
+    <div
+      style={{
+        width: "5px",
+        height: "100%",
+        cursor: "col-resize",
+      }}
+    />
+  </PanelResizeHandle>
+);
 
 const CodeEditor = ({ userName, project, setSelectedProject }) => {
   const editorRefs = useRef({});
+  const ws = useRef(null); // WebSocket reference
+  const debounceTimeout = useRef(null); // Ref for debounce timeout
   const [tabs, setTabs] = useState([{ id: 1, name: "file1.py", content: "" }]);
   const [currentTab, setCurrentTab] = useState(1);
   const [output, setOutput] = useState(null);
@@ -51,6 +51,47 @@ const CodeEditor = ({ userName, project, setSelectedProject }) => {
   const [isError, setIsError] = useState(false);
   const [newTabName, setNewTabName] = useState("");
   const { isOpen, onOpen, onClose } = useDisclosure();
+
+  useEffect(() => {
+    // Establish WebSocket connection
+    ws.current = new WebSocket("ws://localhost:4000"); // Replace with your WebSocket server URL
+
+    ws.current.onopen = () => {
+      console.log("WebSocket connected");
+      // Join the project room
+      ws.current.send(
+        JSON.stringify({
+          event: "join-project",
+          data: { projectId: project._id, userName },
+        })
+      );
+    };
+
+    ws.current.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      if (message.event === "file-update") {
+        const { updatedTabId, updatedContent } = message.data;
+        // Update the content for the appropriate tab
+        setTabs((prevTabs) =>
+          prevTabs.map((tab) =>
+            tab.id === updatedTabId ? { ...tab, content: updatedContent } : tab
+          )
+        );
+      }
+    };
+
+    ws.current.onclose = () => {
+      console.log("WebSocket disconnected");
+    };
+
+    ws.current.onerror = (error) => {
+      console.error("WebSocket error:", error);
+    };
+
+    return () => {
+      ws.current.close();
+    };
+  }, [project._id, userName]);
 
   const runCode = async () => {
     const currentEditor = editorRefs.current[currentTab];
@@ -87,19 +128,33 @@ const CodeEditor = ({ userName, project, setSelectedProject }) => {
     URL.revokeObjectURL(url);
   };
 
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      if ((event.ctrlKey || event.metaKey) && event.key === "s") {
-        event.preventDefault();
-        downloadFile();
-      }
-    };
+  const debounceSendUpdate = (tabId, content) => {
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
+    }
+    debounceTimeout.current = setTimeout(() => {
+      ws.current.send(
+        JSON.stringify({
+          event: "file-update",
+          data: {
+            projectId: project._id,
+            updatedTabId: tabId,
+            updatedContent: content,
+          },
+        })
+      );
+    }, 300); // Adjust debounce delay as needed
+  };
 
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, []);
+  const handleContentChange = (value) => {
+    setTabs((prevTabs) =>
+      prevTabs.map((tab) =>
+        tab.id === currentTab ? { ...tab, content: value } : tab
+      )
+    );
+
+    debounceSendUpdate(currentTab, value); // Send debounced updates
+  };
 
   const addNewTab = () => {
     const newTab = {
@@ -113,14 +168,6 @@ const CodeEditor = ({ userName, project, setSelectedProject }) => {
 
   const handleTabChange = (tabId) => {
     setCurrentTab(tabId);
-  };
-
-  const handleContentChange = (value) => {
-    setTabs((prevTabs) =>
-      prevTabs.map((tab) =>
-        tab.id === currentTab ? { ...tab, content: value } : tab
-      )
-    );
   };
 
   const deleteTab = (tabId) => {
