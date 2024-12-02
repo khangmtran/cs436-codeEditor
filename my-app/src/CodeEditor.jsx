@@ -87,13 +87,14 @@ const CodeEditor = ({ userName, project, setSelectedProject }) => {
         console.log("Fetched files:", files);
         if (files.length === 0) {
           // If no files, create a placeholder file
-          setTabs([{ id: 1, name: "file1.py", content: "" }]);
+          await addNewTab();  
         } else {
           // Set the fetched files as tabs
           setTabs(files.map((file, index) => ({
             id: index + 1,
             name: file.name,
-            content: file.content
+            content: file.content,
+            fileId: file._id
           })));
         }
       } catch (error) {
@@ -176,14 +177,27 @@ const CodeEditor = ({ userName, project, setSelectedProject }) => {
     debounceSendUpdate(currentTab, value); // Send debounced updates
   };
 
-  const addNewTab = () => {
-    const newTab = {
-      id: tabs.length + 1,
-      name: `file${tabs.length + 1}.py`,
-      content: "",
-    };
-    setTabs([...tabs, newTab]);
-    setCurrentTab(newTab.id);
+  const addNewTab = async () => {
+    try {
+      const response = await axios.post(`http://localhost:4000/api/file/${project._id}/file`, {
+        name: `file${tabs.length + 1}.py`,
+        content: "",
+        type: "python",
+        parentFolder: null,
+      });
+      const newFile = response.data;
+
+      const newTab = {
+        id: tabs.length + 1,
+        name: newFile.name,
+        content: newFile.content,
+        fileId: newFile._id
+      };
+      setTabs([...tabs, newTab]);
+      setCurrentTab(newTab.id);
+    } catch (error) {
+      console.error("Failed to create new file", error);
+    }
   };
 
   const handleTabChange = (tabId) => {
@@ -212,7 +226,10 @@ const CodeEditor = ({ userName, project, setSelectedProject }) => {
     onOpen();
   };
 
-  const handleRenameSubmit = () => {
+  const handleRenameSubmit = async () => {
+    const currentTabData = tabs.find((tab) => tab.id === currentTab);
+    await axios.post(`http://localhost:4000/api/file/${currentTabData.fileId}/rename/${newTabName}`, );
+
     setTabs((prevTabs) =>
       prevTabs.map((tab) =>
         tab.id === currentTab ? { ...tab, name: newTabName } : tab

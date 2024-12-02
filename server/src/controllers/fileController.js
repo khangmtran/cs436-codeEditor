@@ -69,6 +69,20 @@ const deleteFile = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+const renameFile = async (req, res) => {  const { id, newName } = req.params;
+console.log(`changeing ${id} to ${newName}`);
+try {
+    const file = await File.findByIdAndUpdate(id, { name: newName }, { new: true });
+    if (!file) {
+        return res.status(404).json({ error: "File not found" });
+    }
+    res.status(200).json(file);
+} catch (error) {
+    console.log(error)
+    res.status(500).json({ error: error.message });
+}
+ 
+};
 
 
 
@@ -76,5 +90,6 @@ module.exports = {
     createFile,
     getFile,
     updateFile,
-    deleteFile
+    deleteFile,
+    renameFile,
 };
