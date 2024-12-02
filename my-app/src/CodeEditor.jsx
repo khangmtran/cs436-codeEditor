@@ -81,10 +81,8 @@ const CodeEditor = ({ userName, project, setSelectedProject }) => {
     };
     const fetchProjectFiles = async () => { 
       try {
-        console.log("Fetching files for project:", project._id);
         const response = await axios.get(`http://localhost:4000/api/project/${project._id}/files`);
         const files = response.data;
-        console.log("Fetched files:", files);
         if (files.length === 0) {
           // If no files, create a placeholder file
           await addNewTab();  

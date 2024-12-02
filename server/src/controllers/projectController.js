@@ -71,12 +71,10 @@ const deleteProject = async (req, res) => {
 
 // Fetch all files for a project
 const getProjectFiles = async (req, res) => {
-    console.log("get project files hit in project controller")
     try {
       const { projectId } = req.params;
       const files = await File.find({ project: projectId });
       if (!files) return res.status(404).json({ error: "No files found for this project" });
-    console.log(files)
       res.status(200).json(files);
     } catch (error) {
       console.error(error);
