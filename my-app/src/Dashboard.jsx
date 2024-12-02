@@ -14,19 +14,19 @@ import {
   Text,
 } from "@chakra-ui/react";
 import axios from "axios";
-
 const Dashboard = ({ setSelectedProject }) => {
   const [projects, setProjects] = useState([]); // User's projects
   const [newProjectName, setNewProjectName] = useState(""); // New project name
   const [isCreating, setIsCreating] = useState(false); // Modal visibility
   const [errorMessage, setErrorMessage] = useState(""); // Error messages
+  const baseUrl = "http://localhost:4000"
 
   // Fetch projects on mount
   useEffect(() => {
     const fetchProjects = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await axios.get("http://localhost:4000/api/auth/projects", {
+        const response = await axios.get(`${baseUrl}/api/auth/projects`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         console.log(response.data)
@@ -50,7 +50,7 @@ const Dashboard = ({ setSelectedProject }) => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
-        "http://localhost:4000/api/project/create",
+        `${baseUrl}/api/project/create`,
         { name: newProjectName }, // Only send the project name
         {
           headers: { Authorization: `Bearer ${token}` },

@@ -14,19 +14,19 @@ import {
   ModalContent,
   ModalBody,
 } from "@chakra-ui/react";
-
 const Chat = ({ userName, project }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [zoomedImage, setZoomedImage] = useState(null);
   const messagesEndRef = useRef(null);
+  const baseUrl = "http://localhost:4000";
 
   useEffect(() => {
     const fetchChats = async () => {
       try {
         const token = localStorage.getItem("token"); // Replace with your method of storing the token
         const response = await axios.get(
-          `http://localhost:4000/api/chat/${project._id}`,
+          `${baseUrl}/api/chat/${project._id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -52,7 +52,7 @@ const Chat = ({ userName, project }) => {
 
     try {
       const response = await axios.post(
-        `http://localhost:4000/api/chat/message/${project._id}`,
+        `${baseUrl}/api/chat/message/${project._id}`,
         newMessage,
         {
           headers: {

@@ -27,6 +27,10 @@ import Chat from "./Chat";
 import GetLinkButton from "./GetLinkButton";
 import { executeCode } from "./pistonAPI";
 import axios from "axios";
+
+const baseUrl = 'http://localhost:4000'; // Define the baseUrl variable
+
+
 // Custom resize handle component
 const ResizeHandle = () => (
   <PanelResizeHandle className="panel-resize-handle">
@@ -81,7 +85,7 @@ const CodeEditor = ({ userName, project, setSelectedProject }) => {
     };
     const fetchProjectFiles = async () => { 
       try {
-        const response = await axios.get(`http://localhost:4000/api/project/${project._id}/files`);
+        const response = await axios.get(`${baseUrl}/api/project/${project._id}/files`);
         const files = response.data;
         if (files.length === 0) {
           // If no files, create a placeholder file
@@ -177,7 +181,7 @@ const CodeEditor = ({ userName, project, setSelectedProject }) => {
 
   const addNewTab = async () => {
     try {
-      const response = await axios.post(`http://localhost:4000/api/file/${project._id}/file`, {
+      const response = await axios.post(`${baseUrl}/api/file/${project._id}/file`, {
         name: `file${tabs.length + 1}.py`,
         content: "",
         type: "python",
@@ -226,7 +230,7 @@ const CodeEditor = ({ userName, project, setSelectedProject }) => {
 
   const handleRenameSubmit = async () => {
     const currentTabData = tabs.find((tab) => tab.id === currentTab);
-    await axios.post(`http://localhost:4000/api/file/${currentTabData.fileId}/rename/${newTabName}`, );
+    await axios.post(`${baseUrl}/api/file/${currentTabData.fileId}/rename/${newTabName}`, );
 
     setTabs((prevTabs) =>
       prevTabs.map((tab) =>

@@ -1,11 +1,11 @@
 import { Button, useToast, Input, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter } from "@chakra-ui/react";
 import React, { useState } from "react";
 import axios from "axios";
-
-const GetLinkButton = ({ projectId }) => {
+ const GetLinkButton = ({ projectId }) => {
   const toast = useToast(); // To show a success or error message
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [email, setEmail] = useState("");
+  const baseUrl = "http://localhost:4000";
 
   const handleAddUser = async () => {
     // Email validation regex
@@ -25,7 +25,7 @@ const GetLinkButton = ({ projectId }) => {
     try {
       const token = localStorage.getItem('token'); 
 
-      const response = await axios.post(`http://localhost:4000/api/project/addUser/${projectId}`, { email }, {
+      const response = await axios.post(`${baseUrl}/api/project/addUser/${projectId}`, { email }, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },

@@ -13,8 +13,8 @@ import {
 import CodeEditor from "./CodeEditor";
 import axios from "axios";
 import Dashboard from "./Dashboard"; 
-
 const App = () => {
+  const baseUrl = "http://localhost:4000";
   const [isNameSet, setIsNameSet] = useState(false); // Track whether the name is set
   const [userName, setUserName] = useState(""); // Store the user's name
   const [isAuthenticated, setIsAuthenticated] = useState(false); // Track authentication status
@@ -45,7 +45,7 @@ const App = () => {
     e.preventDefault();
     try {
       const response = await axios.post(
-        "http://localhost:4000/api/auth/signup",
+        `${baseUrl}/api/auth/signup`,
         formData,
         {
           headers: {
@@ -69,7 +69,7 @@ const App = () => {
     e.preventDefault();
     try {
       const response = await axios.post(
-        "http://localhost:4000/api/auth/login",
+        `{baseUrl}/api/auth/login`,
         formData,
         {
           headers: {
