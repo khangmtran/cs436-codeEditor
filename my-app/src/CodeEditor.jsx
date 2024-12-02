@@ -26,7 +26,7 @@ import Output from "./Output";
 import Chat from "./Chat";
 import GetLinkButton from "./GetLinkButton";
 import { executeCode } from "./pistonAPI";
-
+import axios from "axios";
 // Custom resize handle component
 const ResizeHandle = () => (
   <PanelResizeHandle className="panel-resize-handle">
@@ -44,7 +44,7 @@ const CodeEditor = ({ userName, project, setSelectedProject }) => {
   const editorRefs = useRef({});
   const ws = useRef(null); // WebSocket reference
   const debounceTimeout = useRef(null); // Ref for debounce timeout
-  const [tabs, setTabs] = useState([{ id: 1, name: "file1.py", content: "" }]);
+  const [tabs, setTabs] = useState([]);
   const [currentTab, setCurrentTab] = useState(1);
   const [output, setOutput] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -79,7 +79,28 @@ const CodeEditor = ({ userName, project, setSelectedProject }) => {
         );
       }
     };
-
+    const fetchProjectFiles = async () => { 
+      try {
+        console.log("Fetching files for project:", project._id);
+        const response = await axios.get(`http://localhost:4000/api/project/${project._id}/files`);
+        const files = response.data;
+        console.log("Fetched files:", files);
+        if (files.length === 0) {
+          // If no files, create a placeholder file
+          setTabs([{ id: 1, name: "file1.py", content: "" }]);
+        } else {
+          // Set the fetched files as tabs
+          setTabs(files.map((file, index) => ({
+            id: index + 1,
+            name: file.name,
+            content: file.content
+          })));
+        }
+      } catch (error) {
+        console.error("Failed to fetch files", error);
+      }
+    }
+    fetchProjectFiles();
     ws.current.onclose = () => {
       console.log("WebSocket disconnected");
     };
