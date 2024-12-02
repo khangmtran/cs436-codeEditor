@@ -64,33 +64,6 @@ const CodeEditor = ({ userName, project, setSelectedProject }) => {
   };
 
   useEffect(() => {
-    // Establish WebSocket connection
-    ws.current = new WebSocket("ws://localhost:4000"); // Replace with your WebSocket server URL
-
-    ws.current.onopen = () => {
-      console.log("WebSocket connected");
-      // Join the project room
-      ws.current.send(
-        JSON.stringify({
-          event: "join-project",
-          data: { projectId: project._id, userName },
-        })
-      );
-    };
-
-    ws.current.onmessage = (event) => {
-      const message = JSON.parse(event.data);
-      if (message.event === "file-update") {
-        const { updatedTabId, updatedContent } = message.data;
-        console.log(message.data)
-        // Update the content for the appropriate tab
-        setTabs((prevTabs) =>
-          prevTabs.map((tab) =>
-            tab.fileId === updatedTabId ? { ...tab, content: updatedContent } : tab
-          )
-        );
-      }
-    };
     const fetchProjectFiles = async () => {
       try {
         const response = await axios.get(
@@ -115,7 +88,36 @@ const CodeEditor = ({ userName, project, setSelectedProject }) => {
         console.error("Failed to fetch files", error);
       }
     };
+
     fetchProjectFiles();
+
+    // Establish WebSocket connection
+    ws.current = new WebSocket("ws://localhost:4000");
+    ws.current.onopen = () => {
+      console.log("WebSocket connected");
+      // Join the project room
+      ws.current.send(
+        JSON.stringify({
+          event: "join-project",
+          data: { projectId: project._id, userName },
+        })
+      );
+    };
+
+    ws.current.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      if (message.event === "file-update") {
+        const { updatedTabId, updatedContent } = message.data;
+        console.log(message.data)
+        // Update the content for the appropriate tab
+        setTabs((prevTabs) =>
+          prevTabs.map((tab) =>
+            tab.fileId === updatedTabId ? { ...tab, content: updatedContent } : tab
+          )
+        );
+      }
+    };
+    
     ws.current.onclose = () => {
       console.log("WebSocket disconnected");
     };
@@ -128,6 +130,107 @@ const CodeEditor = ({ userName, project, setSelectedProject }) => {
       ws.current.close();
     };
   }, [project._id, userName]);
+
+  // Save files on page unload
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      saveAllFiles();
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [tabs]);
+
+  const saveAllFiles = async () => {
+    try {
+      for (const tab of tabs) {
+        await axios.put(`${baseUrl}/api/file/${tab.fileId}`, {
+          projectId: project._id,
+          name: tab.name,
+          content: tab.content,
+        });
+      }
+      console.log("All files saved successfully");
+    } catch (error) {
+      console.error("Failed to save files", error.response?.data || error.message);
+    }
+  };
+
+  const saveCurrentTab = async () => {
+    const currentFile = tabs.find((tab) => tab.id === currentTab);
+    if (currentFile) {
+      try {
+        await axios.put(`${baseUrl}/api/file/${currentFile.fileId}`, {
+          projectId: project._id,
+          name: currentFile.name,
+          content: currentFile.content,
+        });
+        console.log("Current tab saved successfully");
+      } catch (error) {
+        console.error("Failed to save current tab", error.response?.data || error.message);
+      }
+    }
+  };
+
+  const handleBackToDashboard = async () => {
+    await saveAllFiles();
+    setSelectedProject(null);
+  };
+
+  const handleContentChange = (value) => {
+    setTabs((prevTabs) =>
+      prevTabs.map((tab) =>
+        tab.id === currentTab ? { ...tab, content: value } : tab
+      )
+    );
+    const currentFile = tabs.find((tab) => tab.id === currentTab);
+    if (currentFile) debounceSendUpdate(currentFile.fileId, value);
+  };
+
+  const debounceSendUpdate = (fileId, content) => {
+    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+
+    debounceTimeout.current = setTimeout(() => {
+      ws.current.send(
+        JSON.stringify({
+          event: "file-update",
+          data: {
+            projectId: project._id,
+            updatedTabId: fileId,
+            updatedContent: content,
+          },
+        })
+      );
+    }, 300);
+  };
+
+  const addNewTab = async () => {
+    try {
+      const response = await axios.post(
+        `${baseUrl}/api/file/${project._id}/file`,
+        {
+          name: `file${tabs.length + 1}.py`,
+          content: "",
+          type: "python",
+          parentFolder: null,
+        }
+      );
+      const newFile = response.data;
+      const newTab = {
+        id: tabs.length + 1,
+        name: newFile.name,
+        content: newFile.content,
+        fileId: newFile._id,
+      };
+      setTabs([...tabs, newTab]);
+      setCurrentTab(newTab.id);
+    } catch (error) {
+      console.error("Failed to create new file", error);
+    }
+  };
 
   const runCode = async () => {
     const currentEditor = editorRefs.current[currentTab];
@@ -163,62 +266,10 @@ const CodeEditor = ({ userName, project, setSelectedProject }) => {
     URL.revokeObjectURL(url);
   };
 
-  const debounceSendUpdate = (tabId, content) => {
-    if (debounceTimeout.current) {
-      clearTimeout(debounceTimeout.current);
-    }
-    debounceTimeout.current = setTimeout(() => {
-      ws.current.send(
-        JSON.stringify({
-          event: "file-update",
-          data: {
-            projectId: project._id,
-            updatedTabId: tabId,
-            updatedContent: content,
-          },
-        })
-      );
-    }, 300); // Adjust debounce delay as needed
-  };
+  
   const getFileIdFromTab = (tabs, currentTabId) => {
     const tab = tabs.find(tab => tab.id === currentTabId);
     return tab ? tab.fileId : null;
-  };
-   
-  const handleContentChange = (value) => {
-    setTabs((prevTabs) =>
-      prevTabs.map((tab) =>
-        tab.id === currentTab ? { ...tab, content: value } : tab
-      )
-    );
-    const fileId = getFileIdFromTab(tabs, currentTab);
-    debounceSendUpdate(fileId, value); // Send debounced updates
-  };
-
-  const addNewTab = async () => {
-    try {
-      const response = await axios.post(
-        `${baseUrl}/api/file/${project._id}/file`,
-        {
-          name: `file${tabs.length + 1}.py`,
-          content: "",
-          type: "python",
-          parentFolder: null,
-        }
-      );
-      const newFile = response.data;
-
-      const newTab = {
-        id: tabs.length + 1,
-        name: newFile.name,
-        content: newFile.content,
-        fileId: newFile._id,
-      };
-      setTabs([...tabs, newTab]);
-      setCurrentTab(newTab.id);
-    } catch (error) {
-      console.error("Failed to create new file", error);
-    }
   };
 
   const handleTabChange = (tabId) => {
@@ -264,14 +315,14 @@ const CodeEditor = ({ userName, project, setSelectedProject }) => {
   return (
     <Box>
       <Box position="absolute" top={4} right={4}>
-        <Button
-          leftIcon={<ArrowBackIcon />}
-          colorScheme="gray"
-          variant="outline"
-          onClick={() => setSelectedProject(null)}
-        >
-          Back to Dashboard
-        </Button>
+      <Button
+        leftIcon={<ArrowBackIcon />}
+        colorScheme="gray"
+        variant="outline"
+        onClick={handleBackToDashboard} // Ensure the function is called
+      >
+        Back to Dashboard
+      </Button>
       </Box>
 
       <PanelGroup ref={panelGroupRef} direction="horizontal">
