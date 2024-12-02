@@ -125,19 +125,24 @@ const Chat = ({ userName, project }) => {
         spacing={2}
         align="stretch"
       >
-        <Box flexGrow={1} overflowY="auto" whiteSpace="pre-wrap">
+         <Box flexGrow={1} overflowY="auto" whiteSpace="pre-wrap">
           {messages.map((msg, index) => (
             <Box key={index} mb={2}>
               <Text>
                 {msg.userName}: {msg.message}
               </Text>
               {msg.type === "image" && (
-                <Image
-                  src={msg.fileUrl}
-                  alt="Chat Image"
-                  onClick={() => handleImageClick(msg.fileUrl)}
-                  cursor="pointer"
-                />
+                <Box maxW="300px">
+                  <Image
+                    src={msg.fileUrl}
+                    alt="Chat Image"
+                    onClick={() => handleImageClick(msg.fileUrl)}
+                    cursor="pointer"
+                    objectFit="contain"
+                    w="100%"
+                    h="auto"
+                  />
+                </Box>
               )}
             </Box>
           ))}
@@ -158,11 +163,17 @@ const Chat = ({ userName, project }) => {
           <Input type="file" onChange={handleFileUpload} />
         </HStack>
       </VStack>
-      <Modal isOpen={zoomedImage !== null} onClose={handleCloseModal}>
+      <Modal isOpen={zoomedImage !== null} onClose={handleCloseModal} size="xl">
         <ModalOverlay />
-        <ModalContent>
+        <ModalContent bg="transparent" boxShadow="none" maxW="60vw" maxH="70vh">
           <ModalBody>
-            <Image src={zoomedImage} alt="Zoomed Chat Image" />
+            <Image
+              src={zoomedImage}
+              alt="Zoomed Chat Image"
+              objectFit="contain"
+              w="100%"
+              h="70vh"
+            />
           </ModalBody>
         </ModalContent>
       </Modal>

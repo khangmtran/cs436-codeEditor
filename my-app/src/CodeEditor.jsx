@@ -18,6 +18,7 @@ import {
   ModalCloseButton,
   ModalBody,
   ModalFooter,
+  HStack,
 } from "@chakra-ui/react";
 import { Editor } from "@monaco-editor/react";
 import { CloseIcon, ArrowBackIcon } from "@chakra-ui/icons";
@@ -28,10 +29,8 @@ import GetLinkButton from "./GetLinkButton";
 import { executeCode } from "./pistonAPI";
 import axios from "axios";
 
-const baseUrl = 'http://localhost:4000'; // Define the baseUrl variable
+const baseUrl = "http://localhost:4000";
 
-
-// Custom resize handle component
 const ResizeHandle = () => (
   <PanelResizeHandle className="panel-resize-handle">
     <div
@@ -46,8 +45,9 @@ const ResizeHandle = () => (
 
 const CodeEditor = ({ userName, project, setSelectedProject }) => {
   const editorRefs = useRef({});
-  const ws = useRef(null); // WebSocket reference
-  const debounceTimeout = useRef(null); // Ref for debounce timeout
+  const panelGroupRef = useRef(null);
+  const ws = useRef(null);
+  const debounceTimeout = useRef(null);
   const [tabs, setTabs] = useState([]);
   const [currentTab, setCurrentTab] = useState(1);
   const [output, setOutput] = useState(null);
@@ -55,6 +55,13 @@ const CodeEditor = ({ userName, project, setSelectedProject }) => {
   const [isError, setIsError] = useState(false);
   const [newTabName, setNewTabName] = useState("");
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const DEFAULT_LAYOUT = [33, 33, 33];
+
+  const resetPanels = () => {
+    if (panelGroupRef.current) {
+      panelGroupRef.current.setLayout(DEFAULT_LAYOUT);
+    }
+  };
 
   useEffect(() => {
     // Establish WebSocket connection
@@ -83,26 +90,30 @@ const CodeEditor = ({ userName, project, setSelectedProject }) => {
         );
       }
     };
-    const fetchProjectFiles = async () => { 
+    const fetchProjectFiles = async () => {
       try {
-        const response = await axios.get(`${baseUrl}/api/project/${project._id}/files`);
+        const response = await axios.get(
+          `${baseUrl}/api/project/${project._id}/files`
+        );
         const files = response.data;
         if (files.length === 0) {
           // If no files, create a placeholder file
-          await addNewTab();  
+          await addNewTab();
         } else {
           // Set the fetched files as tabs
-          setTabs(files.map((file, index) => ({
-            id: index + 1,
-            name: file.name,
-            content: file.content,
-            fileId: file._id
-          })));
+          setTabs(
+            files.map((file, index) => ({
+              id: index + 1,
+              name: file.name,
+              content: file.content,
+              fileId: file._id,
+            }))
+          );
         }
       } catch (error) {
         console.error("Failed to fetch files", error);
       }
-    }
+    };
     fetchProjectFiles();
     ws.current.onclose = () => {
       console.log("WebSocket disconnected");
@@ -128,7 +139,7 @@ const CodeEditor = ({ userName, project, setSelectedProject }) => {
       setIsLoading(true);
       const { run: result } = await executeCode(sourceCode);
       setOutput(result.output.split("\n"));
-   } catch (error) {
+    } catch (error) {
       console.log(error);
     } finally {
       setIsLoading(false);
@@ -181,19 +192,22 @@ const CodeEditor = ({ userName, project, setSelectedProject }) => {
 
   const addNewTab = async () => {
     try {
-      const response = await axios.post(`${baseUrl}/api/file/${project._id}/file`, {
-        name: `file${tabs.length + 1}.py`,
-        content: "",
-        type: "python",
-        parentFolder: null,
-      });
+      const response = await axios.post(
+        `${baseUrl}/api/file/${project._id}/file`,
+        {
+          name: `file${tabs.length + 1}.py`,
+          content: "",
+          type: "python",
+          parentFolder: null,
+        }
+      );
       const newFile = response.data;
 
       const newTab = {
         id: tabs.length + 1,
         name: newFile.name,
         content: newFile.content,
-        fileId: newFile._id
+        fileId: newFile._id,
       };
       setTabs([...tabs, newTab]);
       setCurrentTab(newTab.id);
@@ -230,7 +244,9 @@ const CodeEditor = ({ userName, project, setSelectedProject }) => {
 
   const handleRenameSubmit = async () => {
     const currentTabData = tabs.find((tab) => tab.id === currentTab);
-    await axios.post(`${baseUrl}/api/file/${currentTabData.fileId}/rename/${newTabName}`, );
+    await axios.post(
+      `${baseUrl}/api/file/${currentTabData.fileId}/rename/${newTabName}`
+    );
 
     setTabs((prevTabs) =>
       prevTabs.map((tab) =>
@@ -253,7 +269,7 @@ const CodeEditor = ({ userName, project, setSelectedProject }) => {
         </Button>
       </Box>
 
-      <PanelGroup direction="horizontal">
+      <PanelGroup ref={panelGroupRef} direction="horizontal">
         <Panel defaultSize={33} minSize={10}>
           <Box>
             <Box display="flex" alignItems="center" gap={2} mb={2}>
@@ -332,15 +348,21 @@ const CodeEditor = ({ userName, project, setSelectedProject }) => {
       </PanelGroup>
 
       <Box mt={2}>
-        <Button
-          variant="outline"
-          colorScheme="green"
-          isLoading={isLoading}
-          onClick={runCode}
-        >
-          Run Code
-        </Button>
+        <HStack spacing={2}>
+          <Button
+            variant="outline"
+            colorScheme="green"
+            isLoading={isLoading}
+            onClick={runCode}
+          >
+            Run Code
+          </Button>
+          <Button variant="outline" colorScheme="green" onClick={resetPanels}>
+            Reset Windows
+          </Button>
+        </HStack>
       </Box>
+
       <Box textAlign="center" mt={5}>
         <GetLinkButton projectId={project._id} />
       </Box>
