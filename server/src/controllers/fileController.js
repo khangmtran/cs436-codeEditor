@@ -5,14 +5,27 @@ const Project = require('../models/project.js')
 
 // POST Create a File
 const createFile = async (req, res) => {
-    const { name, content, type, parentFolder, project } = req.body;
+    const { projectId } = req.params;
+    const { name, content, type, parentFolder } = req.body;
+  
     try {
-        const file = await File.create({ name, content, type, parentFolder, project });
-        res.status(200).json(file);
+      // Ensure the project exists
+      const project = await Project.findById(projectId);
+      if (!project) return res.status(404).json({ error: 'Project not found' });
+  
+      const file = await File.createFile({
+        name,
+        content,
+        type,
+        parentFolder,
+        project: projectId,
+      });
+      res.status(201).json(file);
     } catch (error) {
-        res.status(400).json({ error: error.message });
+      console.error(error);
+      res.status(500).json({ error: error.message });
     }
-};
+  };
 
 // GET Get a File
 const getFile = async (req, res) => {

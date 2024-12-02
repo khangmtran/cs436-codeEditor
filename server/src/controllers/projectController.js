@@ -3,6 +3,8 @@ const Folder = require('../models/folder.js');
 const File = require('../models/file.js');
 const User = require('../models/user.js');
 const Chat = require('../models/chat.js');
+
+
 // POST Create a Project
 const createProject = async (req, res) => {
     const { name, description} = req.body;
@@ -67,6 +69,20 @@ const deleteProject = async (req, res) => {
     }
 };
 
+// Fetch all files for a project
+const getProjectFiles = async (req, res) => {
+    try {
+      const { projectId } = req.params;
+      const files = await File.find({ project: projectId });
+      if (!files) return res.status(404).json({ error: "No files found for this project" });
+  
+      res.status(200).json(files);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: error.message });
+    }
+  };
+
 const addCollaborator = async (req, res) => {
     const { projectId } = req.params;
     const { email } = req.body;
@@ -113,5 +129,6 @@ module.exports = {
     getProject,
     updateProject,
     deleteProject,
+    getProjectFiles,
     addCollaborator,
 };
