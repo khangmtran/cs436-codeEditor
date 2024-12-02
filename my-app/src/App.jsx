@@ -12,7 +12,7 @@ import {
 } from "@chakra-ui/react";
 import CodeEditor from "./CodeEditor";
 import axios from "axios";
-import Dashboard from "./Dashboard"; // Ensure you have a Dashboard component
+import Dashboard from "./Dashboard"; 
 
 const App = () => {
   const [isNameSet, setIsNameSet] = useState(false); // Track whether the name is set

@@ -63,8 +63,7 @@ const CodeEditor = ({ userName, project, setSelectedProject }) => {
       setIsLoading(true);
       const { run: result } = await executeCode(sourceCode);
       setOutput(result.output.split("\n"));
-      result.stderr ? setIsError(true) : setIsError(false);
-    } catch (error) {
+   } catch (error) {
       console.log(error);
     } finally {
       setIsLoading(false);
